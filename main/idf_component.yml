@@ -1,0 +1,11 @@
+dependencies:
+  idf:
+    version: ">=5.0"
+
+  espressif/esp-dsp: "*"
+  espressif/esp-tflite-micro: "*"
+
+  # LVGL dependency
+  lvgl/lvgl: ^8.3.11
+
+  esp_lcd_gc9a01: "^1.0"
