@@ -188,6 +188,8 @@ static int detect_speech(int16_t *buffer)
 
     energy /= FRAME_SIZE;
 
+    //ESP_LOGI(TAG, "Frame energy: %ld", energy); 
+
     if (energy < VAD_MIN_ENERGY) {
         return 0;
     }

@@ -52,6 +52,6 @@ void audio_i2s_read(int16_t *buffer, int samples)
 
     for (int i = 0; i < count; i++)
     {
-        buffer[i] = raw_buffer[i] >> 14;  // 24-bit → 16-bit
+        buffer[i] = raw_buffer[i] >> 13;  // 24-bit → 16-bit
     }
 }

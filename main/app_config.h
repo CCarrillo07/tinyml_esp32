@@ -14,11 +14,14 @@
 /* =========================================================
    WIFI CONFIG (used only in Mode B)
    ========================================================= */
-#define WIFI_SSID       "Totalplay-44AD"
-#define WIFI_PASSWORD   "44AD1347dXQ4SZm3"
+//#define WIFI_SSID       "Totalplay-44AD"
+//#define WIFI_PASSWORD   "44AD1347dXQ4SZm3"
+#define WIFI_SSID       "IZZI-9F14"
+#define WIFI_PASSWORD   "bTmzZHrmfZEzZcYzbs"
+
 
 /* Use your PC/server IP reachable from the ESP32 */
-#define UPLOAD_URL      "http://192.168.100.18:5000/upload"
+#define UPLOAD_URL      "http://192.168.0.187:5000/upload"
 
 /* =========================================================
    AUDIO / SERVER METADATA
