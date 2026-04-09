@@ -47,6 +47,7 @@ static system_state_t state = STATE_LISTENING;
 #define PRE_SPEECH_SAMPLES (1600)
 #define MAX_AUDIO_SAMPLES (16000)
 
+
 /* =========================
    BUFFERS (ALLOCATED ON HEAP)
    ========================= */
@@ -68,33 +69,22 @@ static int silence_count = 0;
 static bool g_wifi_ok = false;
 
 /* =========================
-   DISPLAY / LVGL CONTROL
+   MODE HELPERS
    ========================= */
 static bool display_enabled(void)
 {
-#if APP_MODE_DEBUG_UPLOAD
-    return false;
-#else
-    return true;
-#endif
-}
-
-static bool inference_enabled(void)
-{
-#if APP_MODE_DEBUG_UPLOAD
-    return false;
-#else
-    return true;
-#endif
+    return (APP_RUN_MODE == APP_RUN_MODE_DISPLAY);
 }
 
 static bool upload_enabled(void)
 {
-#if APP_MODE_DEBUG_UPLOAD
+    return (APP_RUN_MODE == APP_RUN_MODE_UPLOAD);
+}
+
+/* Inference is ALWAYS enabled in both modes */
+static bool inference_enabled(void)
+{
     return true;
-#else
-    return false;
-#endif
 }
 
 static void lvgl_tick_callback(void *arg)
@@ -126,6 +116,7 @@ static void update_display_status(const char *text)
     if (!display_enabled()) {
         return;
     }
+
     display_send_text(text);
 }
 
@@ -134,6 +125,7 @@ static void run_display_task_if_needed(void)
     if (!display_enabled()) {
         return;
     }
+
     display_task();
 }
 
@@ -196,8 +188,6 @@ static int detect_speech(int16_t *buffer)
 
     energy /= FRAME_SIZE;
 
-    //ESP_LOGI(TAG, "Frame energy: %ld", energy); 
-
     if (energy < VAD_MIN_ENERGY) {
         return 0;
     }
@@ -210,7 +200,7 @@ static int detect_speech(int16_t *buffer)
         speech_frames = 0;
     }
 
-    return speech_frames >= SPEECH_START_FRAMES;
+    return (speech_frames >= SPEECH_START_FRAMES);
 }
 
 /* =========================
@@ -244,7 +234,7 @@ static void flush_pre_buffer_into_speech_buffer(void)
 }
 
 /* =========================
-   MODE A: NORMAL INFERENCE
+   INFERENCE PATH
    ========================= */
 static void process_full_audio_for_inference(int16_t *audio, int length)
 {
@@ -285,19 +275,19 @@ static void process_full_audio_for_inference(int16_t *audio, int length)
 }
 
 /* =========================
-   MODE B: DEBUG UPLOAD
+   UPLOAD PATH
    ========================= */
-static void process_full_audio_for_debug_upload(int16_t *audio, int length)
+static void process_full_audio_for_upload(int16_t *audio, int length)
 {
-    ESP_LOGI(TAG, "Mode B: uploading captured utterance");
-    ESP_LOGI(TAG, "Mode B: sample count = %d", length);
+    ESP_LOGI(TAG, "Upload mode: uploading captured utterance");
+    ESP_LOGI(TAG, "Upload mode: sample count = %d", length);
 
     if (!g_wifi_ok) {
         g_wifi_ok = wifi_upload_init();
     }
 
     if (!g_wifi_ok) {
-        ESP_LOGE(TAG, "Mode B: WiFi still not ready, skipping upload");
+        ESP_LOGE(TAG, "Upload mode: WiFi not ready, skipping upload");
         return;
     }
 
@@ -308,9 +298,9 @@ static void process_full_audio_for_debug_upload(int16_t *audio, int length)
     esp_task_wdt_reset();
 
     if (ok) {
-        ESP_LOGI(TAG, "Mode B: upload success");
+        ESP_LOGI(TAG, "Upload mode: upload success");
     } else {
-        ESP_LOGE(TAG, "Mode B: upload failed");
+        ESP_LOGE(TAG, "Upload mode: upload failed");
     }
 }
 
@@ -326,6 +316,7 @@ void app_main(void)
 
     audio_i2s_init();
 
+    /* Inference is always initialized */
     if (inference_enabled()) {
         setup();
     }
@@ -335,13 +326,15 @@ void app_main(void)
     if (upload_enabled()) {
         g_wifi_ok = wifi_upload_init();
         if (!g_wifi_ok) {
-            ESP_LOGE(TAG, "WiFi init failed in Mode B");
+            ESP_LOGE(TAG, "WiFi init failed in upload mode");
         }
     }
 
     esp_task_wdt_add(NULL);
 
-    // update_display_status("Listening...");
+    if (display_enabled()) {
+        //update_display_status("Listening...");
+    }
 
     while (1) {
         run_display_task_if_needed();
@@ -379,7 +372,10 @@ void app_main(void)
                 flush_pre_buffer_into_speech_buffer();
 
                 state = STATE_RECORDING;
-                // update_display_status("Recording...");
+
+                if (display_enabled()) {
+                    //update_display_status("Recording...");
+                }
             }
 
             speech_active = 1;
@@ -400,15 +396,21 @@ void app_main(void)
                     speech_active = 0;
                     silence_count = 0;
 
-                    if (speech_index > 3500) {
+                    if (speech_index > 2500) {
                         state = STATE_PROCESSING;
-                        // update_display_status("Processing...");
 
-                        if (inference_enabled()) {
-                            process_full_audio_for_inference(speech_buffer, speech_index);
+                        if (display_enabled()) {
+                            //update_display_status("Processing...");
+                        }
+
+                        /* Always run inference first */
+                        process_full_audio_for_inference(speech_buffer, speech_index);
+
+                        /* Then do only the action for the selected mode */
+                        if (display_enabled()) {
                             update_display_if_needed();
                         } else if (upload_enabled()) {
-                            process_full_audio_for_debug_upload(speech_buffer, speech_index);
+                            process_full_audio_for_upload(speech_buffer, speech_index);
                         }
                     } else {
                         ESP_LOGW(TAG, "Speech too short, skipping");
@@ -419,7 +421,10 @@ void app_main(void)
                     speech_index = 0;
 
                     state = STATE_LISTENING;
-                    // update_display_status("Listening...");
+
+                    if (display_enabled()) {
+                        //update_display_status("Listening...");
+                    }
                 }
             }
         }
