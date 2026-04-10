@@ -99,10 +99,6 @@ model = tf.keras.Sequential([
 - Keras model → `.tflite`  
 - `.tflite` → converted to C array (`model.h`) with:
 
-```bash
-xxd -i speech_commands_mfcc.tflite > model.h
-```
-
 ---
 
 ## ESP32 Implementation
@@ -123,3 +119,28 @@ xxd -i speech_commands_mfcc.tflite > model.h
 - **Inference + WiFi** → Send audio to local server  
 
 > Due to resource constraints, display and WiFi are not used simultaneously.
+>
+> ---
+
+## Tools
+
+This project includes auxiliary tools used for model conversion, debugging, and data validation.
+
+### Files Overview
+
+- **`speech_commands_mfcc.tflite`**  
+  TensorFlow Lite model generated from the trained Keras model.
+
+- **`print_ops.py`**  
+  Utility script to inspect TensorFlow Lite model operations and verify compatibility with TensorFlow Lite Micro.
+
+- **`model.h`**  
+  C array representation of the `.tflite` model, generated using:
+
+  ```bash
+  xxd -i speech_commands_mfcc.tflite > model.h
+  ```
+
+- **`server.py`**  
+  Local Flask-based server used to receive audio data from the ESP32.  
+  Useful for debugging and validating captured audio.
