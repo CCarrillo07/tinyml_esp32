@@ -90,7 +90,7 @@ model = tf.keras.Sequential([
 
 ## ESP32 Implementation
 
-- **Microcontroller:** ESP32 / ESP32-C3  
+- **Microcontroller:** ESP32  
 - **Microphone:** INMP441 (I2S)  
 - **Inference:** TensorFlow Lite Micro (`speech_commands_mfcc.tflite` → `model.h` → copied into `model.cc`)  
 
