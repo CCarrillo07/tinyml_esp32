@@ -11,9 +11,7 @@ The system:
 - Extracts MFCC features in real time  
 - Performs on-device inference using a TensorFlow Lite model  
 
----
-
-## Supported Commands
+### Supported Commands
 
 - yes  
 - no  
@@ -38,11 +36,10 @@ The MFCC pipeline is identical in Python and ESP32, ensuring:
 - Matching training/inference distributions  
 - Consistent on-device predictions  
 
----
 
-## Audio Processing (MFCC)
+### Audio Processing (MFCC)
 
-### Parameters
+#### *Parameters*
 
 | Parameter   | Value     |
 |------------|----------|
@@ -53,7 +50,7 @@ The MFCC pipeline is identical in Python and ESP32, ensuring:
 | Mel Filters | 26       |
 | Max Frames  | 100      |
 
-### Pipeline
+#### *Pipeline*
 
 - Hann window  
 - FFT → Power Spectrum  
@@ -61,13 +58,11 @@ The MFCC pipeline is identical in Python and ESP32, ensuring:
 - Log10 scaling  
 - DCT → MFCC  
 
-**Notes:**
+#### *Notes:*
 - Audio is normalized  
 - Converted into fixed-length MFCC sequences (padding/truncation)  
 
----
-
-## Model Details
+### Model Details
 
 - Architecture: 2D CNN  
 - Input Shape: (100, 13, 1)  
@@ -86,18 +81,10 @@ model = tf.keras.Sequential([
     tf.keras.layers.Dense(NUM_CLASSES, activation="softmax")
 ])
 ```
-
-## Model Conversion
+### Model Conversion
 
 - Converted to **TensorFlow Lite (float)**
 - No quantization applied
-
----
-
-## Deployment
-
-- Keras model → `.tflite`  
-- `.tflite` → converted to C array (`model.h`) with:
 
 ---
 
@@ -105,7 +92,7 @@ model = tf.keras.Sequential([
 
 - **Microcontroller:** ESP32 / ESP32-C3  
 - **Microphone:** INMP441 (I2S)  
-- **Inference:** TensorFlow Lite Micro (`model.h` → copied into `model.cc`)  
+- **Inference:** TensorFlow Lite Micro (`speech_commands_mfcc.tflite` → `model.h` → copied into `model.cc`)  
 
 ### On-Device Pipeline
 
