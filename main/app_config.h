@@ -12,7 +12,7 @@
 #define APP_RUN_MODE_UPLOAD  1
 
 /* =========================================================
-   WIFI CONFIG (used only in Mode B)
+   WIFI CONFIG (used only in Mode 1)
    ========================================================= */
 //#define WIFI_SSID       "Totalplay-44AD"
 //#define WIFI_PASSWORD   "44AD1347dXQ4SZm3"
