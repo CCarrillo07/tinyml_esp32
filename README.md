@@ -97,7 +97,11 @@ model = tf.keras.Sequential([
 ## Deployment
 
 - Keras model → `.tflite`  
-- `.tflite` → converted to C array (`model.h`)  
+- `.tflite` → converted to C array (`model.h`) with:
+
+```bash
+xxd -i speech_commands_mfcc.tflite > model.h
+```
 
 ---
 
@@ -105,7 +109,7 @@ model = tf.keras.Sequential([
 
 - **Microcontroller:** ESP32 / ESP32-C3  
 - **Microphone:** INMP441 (I2S)  
-- **Inference:** TensorFlow Lite Micro (`model.h`)  
+- **Inference:** TensorFlow Lite Micro (`model.h` → copied into `model.cc`)  
 
 ### On-Device Pipeline
 
